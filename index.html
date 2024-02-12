@@ -1,4 +1,4 @@
-<!-- Good morning, afternoon or evening, who ever is here :)
+<!-- Good morning, afternoon or evening, whoever is here :)
 
   All assets are base64 encoded, because changing them is a rare occasion.
 
@@ -479,7 +479,6 @@
             window: { x: Math.max(0, event.offsetX), y: Math.max(0, event.offsetY) },
           },
         };
-        console.log(message);
         dc.send(JSON.stringify(message));
       } else {
         const message = {
@@ -491,7 +490,6 @@
             window: { x: Math.max(0, event.offsetX), y: Math.max(0, event.offsetY) },
           },
         };
-        console.log(message);
         ws.send(JSON.stringify(message));
       }
 
@@ -564,30 +562,50 @@
 
         // This first call only draws the 1st path encountered, which
         // will act as our base.
-        const [entityId, solid3d] = svg2KCApiCalls(svgOutline, { firstOnly: true });
+        const baseId = svg2KCApiCalls(svgOutline, { firstOnly: true });
 
         // Hold off creating the outline and stamp until we find the top face
         const shapes = (topFace) => {
           // The rest are drawn on top of this.
-          svgKCApiCalls(svgOutline, { topFace, extrudeHeight: 10 });
+          svg2KCApiCalls(svgOutline, { topFace, extrudeHeight: 10 });
           svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 5 });
         };
 
-        // TODO: Actually sketch on the appropriate face.
-        solid3d_get_extrusion_face_info({ edge_id: entityId, object_id: solid3d }, (data) => {
-          console.log(data);
+        let found = false;
 
-          // Move camera back to the original position
-          default_camera_zoom({ magnitude: -25 });
-          default_camera_look_at({
-            center: { x: 0, y: 0, z: 0 },
-            up: { x: 0, y: 0, z: 1 },
-            vantage: { x: 0, y: -100, z: 75 },
-          });
+        entity_get_all_child_uuids({ entity_id: baseId }, (data) => {
+          edit_mode_enter({ target: baseId });
 
-          // Stop the stream, save on bandwidth
-          streamPlayback(false);
+          for (let entity_id of data.resp.data.modeling_response.data.entity_ids) {
+            if (found) break;
+            get_entity_type({ entity_id }, (data) => {
+              if (data.resp.data.modeling_response.data.entity_type === "edge") {
+                solid3d_get_extrusion_face_info({ edge_id: entity_id, object_id: baseId }, (data) => {
+                  for (let face of data.resp.data.modeling_response.data.faces) {
+                    if (found) break;
+                    if (face.cap === "top") {
+                      found = true;
+                      shapes(face.face_id);
+                    }
+                  }
+                });
+              }
+            });
+          }
         });
+
+        // Move camera back to the original position
+        default_camera_zoom({ magnitude: -25 });
+        default_camera_look_at({
+          center: { x: 0, y: 0, z: 0 },
+          up: { x: 0, y: 0, z: 1 },
+          vantage: { x: 0, y: -100, z: 75 },
+        });
+
+         //  // Stop the stream, save on bandwidth
+         //  setTimeout(() => {
+         //    streamPlayback(false);
+         //  }, 5000);
       });
     };
 
@@ -613,7 +631,8 @@
     "default_camera_focus_on", "default_camera_zoom", "solid2d_add_hole",
     "default_camera_enable_sketch_mode", "default_camera_disable_sketch_mode",
     "default_camera_look_at", "entity_get_all_child_uuids",
-    "solid3d_get_extrusion_face_info"];
+    "solid3d_get_extrusion_face_info", "edit_mode_enter", "edit_mode_exit",
+    "get_entity_type"];
 
     // Create the functions for ease of use
     for (const command of commands) {
@@ -630,6 +649,7 @@
         // Call this callback when the server responds with the same cmd_id
         if (cb) cbs[payload.cmd_id] = cb;
 
+        console.log(payload);
         ws.send(JSON.stringify(payload));
         return payload.cmd_id;
       };
@@ -638,7 +658,6 @@
     // Let's make all the command functions part of the global namespace.
     // Allows for doing this like start_path(), extend_path(), etc.
     Object.assign(window, cmds);
-
 
     const KittyCADClient = (sessionKey, fnCmds) => {
       const queue = [];
@@ -928,14 +947,14 @@
         if (this.value_buffer.length == 0) {
           return;
         }
-          
+
         let value = parseFloat(this.value_buffer);
         this.values.push(value);
         this.value_buffer = "";
       }
 
       push_command(command) {
-        if (this.is_value_already_pushed == false) {
+        if (this.value_buffer != "") {
           this.push_value();
           this.is_value_already_pushed = true;
         }
@@ -1276,6 +1295,35 @@
                   case "r" : circle.radius = parseFloat(attr.value); break;
                 }
               }
+
+              const pathId = start_path();
+
+              if (basePathId === undefined) {
+                basePathId = pathId;
+              } else if (e.style.fill === "none" || !e.style.fill) {
+                additionalPathIds.push(pathId);
+              } else if (e.style.fill !== "none") {
+                cutPathIds.push(pathId);
+              }
+
+              // Used to center the object when being created
+              const offsetCoords = {
+                x: (parseFloat(svg.width.baseVal.valueInSpecifiedUnits) / -2) + translate.x,
+                y: (parseFloat(svg.height.baseVal.valueInSpecifiedUnits) / 2) - translate.y,
+              };
+
+              //extend_path({
+              //  path: pathId,
+              //  segment:  {
+              //    type: "arc",
+              //    end: {
+              //      x: this.current_point.x + this.offsetCoords.x,
+              //      y: -this.current_point.y + this.offsetCoords.y,
+              //      z: 0,
+              //    },
+              //    relative: false
+              //  }
+              //});
               // cmds += `circle ${circle.radius} >> move [${circle.position.x}, ${-circle.position.y}, 0],\n`;
             }
             case "ellipse": {
@@ -1294,15 +1342,17 @@
               for (let attr of e.attributes) {
                 switch (attr.name) {
                   case "d": {
+                    if (opts.topFace) {
+                      sketch_mode_enable({ plane_id: opts.topFace, ortho: false, animated: false });
+                    }
+                  
                     const pathId = start_path();
 
                     if (basePathId === undefined) {
                       basePathId = pathId;
-                    } else if (e.style.fill === "none") {
+                    } else if (e.style.fill === "none" || !e.style.fill) {
                       additionalPathIds.push(pathId);
-                    }
-
-                    if (e.style.fill !== "none") {
+                    } else if (e.style.fill !== "none") {
                       cutPathIds.push(pathId);
                     }
 
@@ -1355,16 +1405,7 @@
                         }
 
                         // Yep, thanks JS, for no multi-case on one line.
-                        case '0':
-                        case '1':
-                        case '2':
-                        case '3':
-                        case '4':
-                        case '5':
-                        case '6':
-                        case '7':
-                        case '8':
-                        case '9':
+                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
                         case '.': {
                           state.value_buffer += char;
                           break;
@@ -1392,6 +1433,7 @@
 
                     close_path({ path_id: pathId });
 
+                    if (opts.topFace) sketch_mode_disable();
                     if (opts.firstOnly) escape = true;
 
                     break;
@@ -1413,10 +1455,10 @@
       traverse(svg);
 
       cutPathIds.forEach((pathId) => solid2d_add_hole({ hole_id: pathId, object_id: basePathId }));
-      const solid3d = extrude({ target: basePathId, distance: opts.firstOnly ? 1 : opts.extrudeHeight, cap: true })
+      extrude({ target: basePathId, distance: opts.firstOnly ? 1 : opts.extrudeHeight, cap: true })
       additionalPathIds.forEach((pathId) => extrude({ target: pathId, distance: 10, cap: true }));
 
-      return [basePathId, solid3d];
+      return basePathId;
     }
     </script>
     <script defer data-domain="cookie-cutter.zoo.dev" src="https://plausible.corp.zoo.dev/js/script.js"></script>

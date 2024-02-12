@@ -444,54 +444,77 @@
     });
 
     let isMouseActive = false;
-    const mouseEventToKCCameraDrag = {
-      mousedown: "camera_drag_start",
-      mousemove: "camera_drag_move",
-      mouseup: "camera_drag_end",
+    const pointerEventToKCCameraDrag = {
+      pointerdown: "camera_drag_start",
+      pointermove: "camera_drag_move",
+      pointerup: "camera_drag_end",
     };
 
-    // TODO: Fix mouse movement.
-    const mouseHandler = (eventName) => (event) => {
-      // Remove this if you're going to fix this.
-      // Also search for "stream.pause()" and comment out the code that
-      // pauses the stream while testing. After this works, start and stop
-      // the stream on mousedown/up to save bandwidth.
-      return;
+    let sequence = 0;
+    const pointerHandler = (eventName) => (event) => {
+      event.preventDefault();
+      event.stopPropagation();
 
       if (!dc) return;
 
-      if (eventName === "mousemove" && isMouseActive === false) return;
-      if (eventName === "mousedown") isMouseActive = true;
-      if (eventName === "mouseup") isMouseActive = false;
+      if (eventName === "pointermove" && isMouseActive === false) return;
+      if (eventName === "pointerdown") {
+        isMouseActive = true;
+        streamPlayback(true);
+      }
+      if (eventName === "pointerup") {
+        isMouseActive = false;
+        streamPlayback(false);
+      }
 
-      if (eventName === "mousemove") {
-        dc.send(JSON.stringify({
-            type: "modeling_cmd_req",
-            cmd_id: uuidV4(),
-            cmd: {
-              type: mouseEventToKCCameraDrag[eventName],
-              interaction: "rotate",
-              sequence: eventName === "mousemove" ? Math.floor(Date.now() / 1000) : undefined,
-              window: { x: Math.max(0, event.offsetX), y: Math.max(0, event.offsetY) },
-            },
-        }));
-      } else {
-        ws.send(JSON.stringify({
+      if (eventName === "pointermove") {
+        sequence += 1;
+        const message = {
           type: "modeling_cmd_req",
           cmd_id: uuidV4(),
           cmd: {
-            type: mouseEventToKCCameraDrag[eventName],
+            type: pointerEventToKCCameraDrag[eventName],
             interaction: "rotate",
-            sequence: eventName === "mousemove" ? Math.floor(Date.now() / 1000) : undefined,
+            sequence,
             window: { x: Math.max(0, event.offsetX), y: Math.max(0, event.offsetY) },
           },
-        }));
+        };
+        console.log(message);
+        dc.send(JSON.stringify(message));
+      } else {
+        const message = {
+          type: "modeling_cmd_req",
+          cmd_id: uuidV4(),
+          cmd: {
+            type: pointerEventToKCCameraDrag[eventName],
+            interaction: "rotate",
+            window: { x: Math.max(0, event.offsetX), y: Math.max(0, event.offsetY) },
+          },
+        };
+        console.log(message);
+        ws.send(JSON.stringify(message));
       }
+
+      return false;
     };
 
-    streamEl.addEventListener("mousemove", mouseHandler("mousemove"));
-    streamEl.addEventListener("mousedown", mouseHandler("mousedown"));
-    streamEl.addEventListener("mouseup", mouseHandler("mouseup"));
+    streamEl.addEventListener("pointermove", pointerHandler("pointermove"), { passive: false });
+    streamEl.addEventListener("pointerdown", pointerHandler("pointerdown"), { passive: false });
+    streamEl.addEventListener("pointerup", pointerHandler("pointerup"), { passive: false });
+
+    const streamPlayback = (isPlaying) => {
+      if (!isPlaying) {
+        streamEl.pause();
+        mediaStream.getTracks().forEach(track => {
+          track.enabled = false;
+        });
+      } else {
+        mediaStream.getTracks().forEach(track => {
+          track.enabled = true;
+        });
+        streamEl.play();
+      }
+    }
 
     generateBtn.addEventListener("click", () => {
       isGenerating = true;
@@ -546,7 +569,7 @@
         // Hold off creating the outline and stamp until we find the top face
         const shapes = (topFace) => {
           // The rest are drawn on top of this.
-          svg2KCApiCalls(svgOutline, { topFace, extrudeHeight: 10 });
+          svgKCApiCalls(svgOutline, { topFace, extrudeHeight: 10 });
           svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 5 });
         };
 
@@ -563,11 +586,7 @@
           });
 
           // Stop the stream, save on bandwidth
-          streamEl.pause();
-          mediaStream.getTracks().forEach(track => {
-            track.stop();
-            track.enabled = false;
-          });
+          streamPlayback(false);
         });
       });
     };
@@ -701,17 +720,19 @@
 
         // If you don't do this, your offer may not include what
         // it needs to establish it ;) (it'll fail)
-        dc = pc.createDataChannel("unreliable_modeling_cmds");
-        dc.addEventListener("open", () => {
-          console.log("unreliable_modeling_cmds open");
+        pc.createDataChannel("unreliable_modeling_cmds");
 
-          if (fnCmds) {
-            fnCmds();
-            ignition();
-          }
-        });
-        dc.addEventListener("message", (event) => {
-          console.log(event);
+        pc.addEventListener("datachannel", (event) => {
+          dc = event.channel;
+
+          dc.addEventListener("open", () => {
+            console.log("unreliable_modeling_cmds open");
+
+            if (fnCmds) {
+              fnCmds();
+              ignition();
+            }
+          });
         });
 
         pc.addTransceiver('video', {

@@ -543,7 +543,7 @@
         credentials: 'include',
       }).then(res => res.json())
 
-      if (user) {
+      if (user && !user.error_code) {
         localStorage.setItem(ZOO_USER_KEY, JSON.stringify(user))
         signIn(user)
       } else {

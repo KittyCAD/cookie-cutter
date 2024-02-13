@@ -675,11 +675,23 @@
     downloadBtn.addEventListener("click", () => {
       window["export"]({
         entity_ids: [],
-        source_unit: "in",
+        source_unit: "mm",
         format: {
-          type: "gltf",
-          storage: "binary",
-          presentation: "pretty"
+          type: "stl",
+          coords: {
+            forward: {
+              axis: 'y',
+              direction: 'negative',
+            },
+            up: {
+              axis: 'z',
+              direction: 'positive',
+            },
+          },
+          units: "mm",
+          storage: "ascii",
+          selection: { type: "default_scene" },
+          presentation: "pretty",
         }
       });
     });
@@ -718,6 +730,11 @@
           // The rest are drawn on top of this.
           svg2KCApiCalls(svgOutline, { topFace, extrudeHeight: 10 });
           svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 5 });
+
+          // Stop the stream, save on bandwidth
+          setTimeout(() => {
+            streamPlayback(false);
+          }, 5000);
         };
 
         let found = false;
@@ -743,18 +760,6 @@
           }
         });
 
-        // Move camera back to the original position
-        default_camera_zoom({ magnitude: -25 });
-        default_camera_look_at({
-          center: { x: 0, y: 0, z: 0 },
-          up: { x: 0, y: 0, z: 1 },
-          vantage: { x: 0, y: -100, z: 75 },
-        });
-
-         //  // Stop the stream, save on bandwidth
-         //  setTimeout(() => {
-         //    streamPlayback(false);
-         //  }, 5000);
       });
     };
 
@@ -942,10 +947,10 @@
       };
 
       const generateAndDownload = (data) => {
-        const blob = new Blob([data], { type: 'model/gltf-binary' });
+        const blob = new Blob([data], { type: 'model/stl' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'cookie-cutter.glb';
+        link.download = 'cookie-cutter.stl';
         link.click();
       }
 
@@ -1426,7 +1431,7 @@
       let escape = false;
 
       const startPathAndTrackSomeThings = (e, translate, opts) => {
-        if (opts.topFace) enable_sketch_mode({ entity_id: opts.topFace, ortho: false, animated: false });
+        if (opts.topFace) enable_sketch_mode({ entity_id: opts.topFace, ortho: false, animated: true });
 
         const pathId = start_path();
 

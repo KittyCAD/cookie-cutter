@@ -492,9 +492,8 @@
     let isGenerating = false;
     let svgs = {};
     const TOKEN_COOKIE_NAME = '__Secure-next-auth.session-token'
-    const tokenCookieRegex = new RegExp(`${TOKEN_COOKIE_NAME}=([^;]+)`)
     const ZOO_USER_KEY = 'ZOO_USER'
-    const DOMAIN = '.dev.zoo.dev'
+    const DOMAIN = window.location.origin.includes('localhost') ? '.dev.zoo.dev' : '.zoo.dev'
 
     const signInDiv = document.getElementById("sign-in");
     const accountDiv = document.getElementById("account");

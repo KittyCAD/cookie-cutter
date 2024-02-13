@@ -632,7 +632,7 @@
     "default_camera_enable_sketch_mode", "default_camera_disable_sketch_mode",
     "default_camera_look_at", "entity_get_all_child_uuids",
     "solid3d_get_extrusion_face_info", "edit_mode_enter", "edit_mode_exit",
-    "get_entity_type"];
+    "get_entity_type", "enable_sketch_mode"];
 
     // Create the functions for ease of use
     for (const command of commands) {
@@ -1276,91 +1276,48 @@
 
       let escape = false;
 
+      const startPathAndTrackSomeThings = (e, translate, opts) => {
+        if (opts.topFace) enable_sketch_mode({ entity_id: opts.topFace, ortho: false, animated: false });
+
+        const pathId = start_path();
+
+        if (basePathId === undefined) {
+          basePathId = pathId;
+        } else if (e.style.fill === "none" || !e.style.fill) {
+          additionalPathIds.push(pathId);
+        } else if (e.style.fill !== "none") {
+          cutPathIds.push(pathId);
+        }
+
+        // Used to center the object when being created
+        const offsetCoords = {
+          x: (parseFloat(svg.width.baseVal.valueInSpecifiedUnits) / -2) + translate.x,
+          y: (parseFloat(svg.height.baseVal.valueInSpecifiedUnits) / 2) - translate.y,
+        };
+
+        return [pathId, offsetCoords];
+      };
+
+      const closePathAndCleanUp = (pathId, opts) => {
+        close_path({ path_id: pathId });
+        if (opts.topFace) sketch_mode_disable();
+      };
+
       const traverse = (root) => {
         for (let e of root.children) {
           switch (e.tagName) {
             case "g": {
               translate = {
-                x: e.transform.baseVal[0].matrix.e,
-                y: e.transform.baseVal[0].matrix.f,
+                x: translate.x + e.transform.baseVal[0].matrix.e,
+                y: translate.y + e.transform.baseVal[0].matrix.f,
               };
               break;
-            }
-            case "circle": {
-              let circle = new Circle();
-              for (let attr of e.attributes) {
-                switch (attr.name) {
-                  case "cx": circle.position.x = parseFloat(attr.value); break;
-                  case "cy": circle.position.y = parseFloat(attr.value); break;
-                  case "r" : circle.radius = parseFloat(attr.value); break;
-                }
-              }
-
-              const pathId = start_path();
-
-              if (basePathId === undefined) {
-                basePathId = pathId;
-              } else if (e.style.fill === "none" || !e.style.fill) {
-                additionalPathIds.push(pathId);
-              } else if (e.style.fill !== "none") {
-                cutPathIds.push(pathId);
-              }
-
-              // Used to center the object when being created
-              const offsetCoords = {
-                x: (parseFloat(svg.width.baseVal.valueInSpecifiedUnits) / -2) + translate.x,
-                y: (parseFloat(svg.height.baseVal.valueInSpecifiedUnits) / 2) - translate.y,
-              };
-
-              //extend_path({
-              //  path: pathId,
-              //  segment:  {
-              //    type: "arc",
-              //    end: {
-              //      x: this.current_point.x + this.offsetCoords.x,
-              //      y: -this.current_point.y + this.offsetCoords.y,
-              //      z: 0,
-              //    },
-              //    relative: false
-              //  }
-              //});
-              // cmds += `circle ${circle.radius} >> move [${circle.position.x}, ${-circle.position.y}, 0],\n`;
-            }
-            case "ellipse": {
-              let ellipse = new Ellipse();
-              for (let attr of e.attributes) {
-                switch (attr.name) {
-                  case "cx": ellipse.position.x = parseFloat(attr.value); break;
-                  case "cy": ellipse.position.y = parseFloat(attr.value); break;
-                  case "rx": ellipse.radius_x = parseFloat(attr.value); break; 
-                  case "ry": ellipse.radius_y = parseFloat(attr.value); break; 
-                }
-              }
-              // cmds += `ellipse [ ${ellipse.radius_x}, ${ellipse.radius_y} ] >> move [${ellipse.position.x}, ${-ellipse.position.y}, 0],\n`;
             }
             case "path": {
               for (let attr of e.attributes) {
                 switch (attr.name) {
                   case "d": {
-                    if (opts.topFace) {
-                      sketch_mode_enable({ plane_id: opts.topFace, ortho: false, animated: false });
-                    }
-                  
-                    const pathId = start_path();
-
-                    if (basePathId === undefined) {
-                      basePathId = pathId;
-                    } else if (e.style.fill === "none" || !e.style.fill) {
-                      additionalPathIds.push(pathId);
-                    } else if (e.style.fill !== "none") {
-                      cutPathIds.push(pathId);
-                    }
-
-                    // Used to center the object when being created
-                    const offsetCoords = {
-                      x: (parseFloat(svg.width.baseVal.valueInSpecifiedUnits) / -2) + translate.x,
-                      y: (parseFloat(svg.height.baseVal.valueInSpecifiedUnits) / 2) - translate.y,
-                    };
+                    const [pathId, offsetCoords] = startPathAndTrackSomeThings(e, translate, opts);
 
                     let state = new PathState(pathId, offsetCoords);
 
@@ -1431,11 +1388,9 @@
                       state.push_command(Command.StopAbsolute);
                     }
 
-                    close_path({ path_id: pathId });
+                    closePathAndCleanUp(pathId, opts);
 
-                    if (opts.topFace) sketch_mode_disable();
                     if (opts.firstOnly) escape = true;
-
                     break;
                   }
                 }
@@ -1455,8 +1410,8 @@
       traverse(svg);
 
       cutPathIds.forEach((pathId) => solid2d_add_hole({ hole_id: pathId, object_id: basePathId }));
-      extrude({ target: basePathId, distance: opts.firstOnly ? 1 : opts.extrudeHeight, cap: true })
-      additionalPathIds.forEach((pathId) => extrude({ target: pathId, distance: 10, cap: true }));
+      extrude({ target: basePathId, distance: opts.firstOnly ? 2 : opts.extrudeHeight, cap: true })
+      additionalPathIds.forEach((pathId) => extrude({ target: pathId, distance: opts.extrudeHeight, cap: true }));
 
       return basePathId;
     }

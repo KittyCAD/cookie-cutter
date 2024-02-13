@@ -520,7 +520,7 @@
     };
 
     const signOut = async () => {
-      await fetch(`${getAPIBase()}/logout`, {
+      await fetch(`https://api${DOMAIN}/logout`, {
         method: 'POST',
         credentials: 'include',
       })

@@ -798,7 +798,7 @@
         const shapes = (topFace) => {
           // The rest are drawn on top of this.
           svg2KCApiCalls(svgOutline, { topFace, extrudeHeight: 10 });
-          // svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 5 });
+          svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 5 });
 
           // Stop the stream, save on bandwidth
           setTimeout(() => {

@@ -551,8 +551,8 @@
       }
     });
 
-    signOutBtn.addEventListener("click", () => {
-      signOut()
+    signOutBtn.addEventListener("click", async () => {
+      await signOut()
       signOutUI()
       window.location.reload()
     });

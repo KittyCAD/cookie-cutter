@@ -109,10 +109,11 @@
       }
 
       /* Hide the default browser arrow for the summary tag */
+      #uwu,
       details > summary {
         list-style: none;
-        width: 48px;
-        height: 48px;
+        width: 3rem;
+        height: 3rem;
         border-radius: 100px;
         overflow: hidden;
 
@@ -125,7 +126,26 @@
         cursor: pointer;
       }
 
-      #avatar {
+      #uwu {
+        animation: rock 1s infinite alternate;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #uwu {
+          animation: none;
+        }
+      }
+
+      @keyframes rock {
+        0% {
+          transform: rotate(25deg);
+        }
+        100% {
+          transform: rotate(35deg);
+        }
+      }
+
+      #avatar,
+      #uwu > img {
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -146,6 +166,7 @@
         right: 0;
         min-width: 200px;
         max-width: 300px;
+        margin-top: 8px;
 
         font-family: "Titan One";
         color: #FF3232;
@@ -196,17 +217,17 @@
         gap: 20px;
         border: 4px dashed #FF7B7B;
 
+        color: #FF3232;
         font-family: "Owners";
         font-size: 16px;
         font-weight: 400;
         line-height: 22px;
         letter-spacing: 0.04em;
         text-align: center;
-        color: #FF3232;
-
+        
         cursor: pointer;
       }
-
+      
       .svg-file-uploader > * {
         user-select: none;
       }
@@ -277,6 +298,43 @@
         cursor: pointer;
       }
 
+      body:not(.signed-in) #configuration {
+        position: relative;
+      }
+
+      body:not(.signed-in) #configuration > * {
+        pointer-events: none;
+      }
+
+      body:not(.signed-in) #configuration::before {
+        content: "Sign in pls!";
+        position: absolute;
+        cursor: not-allowed;
+        font-size: 4rem;
+        color: #FF3232;
+        inset: 1rem ;
+        display: grid;
+        place-items: center;
+        opacity: 1;
+        padding: 0.5em;
+        place-items: center;
+        font-family: "Titan One";
+        background-color: #FFE9E9DF;
+        border: 3px solid #FF3232;
+        border-radius: 8px;
+      }
+
+      body:not(.signed-in) #configuration::after {
+        content: "Our APIs need to eat tokens to poop out cookie cutters :3";
+        font-family: "Owners";
+        pointer-events: none;
+        font-size: 1rem;
+        position: absolute;
+        bottom: 2rem;
+        left: 2rem;
+        color: #FF3232;
+      }
+
       button.secondary {
         background: transparent;
         box-shadow: none;
@@ -329,6 +387,11 @@
           margin-inline: 5vw;
           display: flex;
           flex-direction: column;
+        }
+
+        #sign-in {
+          font-size: 20px;
+          line-height: 1;
         }
 
         section#configuration {
@@ -416,7 +479,10 @@
         <div id="auth">
           <a class="hide" id="sign-in" href="https://zoo.dev/signin?callbackUrl=https%3A%2F%2Fcookie-cutter.zoo.dev">
             Sign in
-            <img id="uwu" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTQiIGhlaWdodD0iNTUiIHZpZXdCb3g9IjAgMCA1NCA1NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMTkuMDU3OCIgeT0iLTIuNzk1MjUiIHdpZHRoPSI0NC4zNyIgaGVpZ2h0PSI0NC4zNyIgcng9IjIyLjE4NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzAgMTkuMDU3OCAtMi43OTUyNSkiIHN0cm9rZT0iI0ZGMzIzMiIgc3Ryb2tlLXdpZHRoPSI1LjEiLz4KPHBhdGggZD0iTTE0LjU2NzMgMjYuMTI5OEMxMy43NzU4IDI1LjY3MjkgMTMuMzM5NCAyNS4xNDc3IDEzLjI1OCAyNC41NTQyQzEzLjE4MzcgMjMuOTY0OCAxMy40NDAzIDIzLjE2MTMgMTQuMDI3OCAyMi4xNDM3TDE1LjY5MjUgMTkuMjYwNEMxNS43NzQxIDE5LjExOTEgMTYuMDYwMSAxOS4xMDUyIDE2LjU1MDQgMTkuMjE4N0MxNy4wNDQ5IDE5LjMyNTIgMTcuNTIxOCAxOS41MTEgMTcuOTgxMSAxOS43NzYyQzE4LjU5NTkgMjAuMTMxMiAxOC44MTE1IDIwLjQ2NzYgMTguNjI3OSAyMC43ODU2TDE3LjA3MzUgMjMuNDc4MUMxNi43NjM0IDI0LjAxNTIgMTYuNTU4MSAyNC40MTk2IDE2LjQ1NzcgMjQuNjkxNEMxNi4zNjE0IDI0Ljk1NjIgMTYuMzk4MSAyNS4xMzc1IDE2LjU2NzcgMjUuMjM1NEMxNi43OTM4IDI1LjM2NiAxNi45NjIgMjUuMzM1OSAxNy4wNzIxIDI1LjE0NTFMMTkuMjc1MyAyMS4zMjlDMTkuMzYxIDIxLjE4MDYgMTkuNjU5NiAyMS4xNjkzIDIwLjE3MTIgMjEuMjk1QzIwLjY4MjggMjEuNDIwOCAyMS4xOTY1IDIxLjYzMjYgMjEuNzEyNCAyMS45MzA0QzIyLjIyODMgMjIuMjI4MyAyMi40MDY2IDIyLjUxNSAyMi4yNDc1IDIyLjc5MDZMMTkuMDk1NyAyOC4yNDk3QzE5LjAzODYgMjguMzQ4NiAxOC43NzUyIDI4LjI5MDggMTguMzA1NSAyOC4wNzYxQzE3LjgzNTggMjcuODYxNSAxNy4zODU0IDI3LjYyOTcgMTYuOTU0NCAyNy4zODA4QzE2LjUyMzMgMjcuMTMyIDE2LjMzNjkgMjYuOTQ4OSAxNi4zOTUxIDI2LjgzMThMMTYuNjg2OSAyNi4wODE2TDE2LjYwMjEgMjYuMDMyNkMxNi4zOTE2IDI2LjI1MDMgMTYuMTQ0IDI2LjM4NTMgMTUuODU5NCAyNi40Mzc3QzE1LjcxMTUgMjYuNDY1NCAxNS41MTgyIDI2LjQ1NzUgMTUuMjc5NSAyNi40MTM5QzE1LjA1MiAyNi4zNjczIDE0LjgxNDYgMjYuMjcyNiAxNC41NjczIDI2LjEyOThaTTI3Ljg2ODIgMzMuMzQyN0MyNy42Nzg0IDMzLjQ1OTMgMjcuMTQ4OSAzMy4yNjY3IDI2LjI3OTcgMzIuNzY0OEMyNS40MTc1IDMyLjI2NzEgMjUuMDE3OCAzMS45MjMyIDI1LjA4MDMgMzEuNzMzMkwyNS44MzM4IDI5LjU5NTlMMjUuNjg1NCAyOS41MTAyTDI0LjIzMjMgMzEuMjQzNkMyNC4xMTMyIDMxLjQwMDkgMjMuNDQ1OSAzMS4xMjg3IDIyLjIzMDQgMzAuNDI3QzIxLjg5MTIgMzAuMjMxMSAyMS42NzUzIDMwLjA4MjkgMjEuNTgyNiAyOS45ODIzQzIxLjUwMTEgMjkuODc4NyAyMS40NjU3IDI5Ljc2ODcgMjEuNDc2MyAyOS42NTI0QzIyLjAyNjQgMjUuNjY0IDIyLjM1MDUgMjMuNTg1IDIyLjQ0ODQgMjMuNDE1NEMyMi41NDYzIDIzLjI0NTggMjIuOTAwNyAyMy4yMTk1IDIzLjUxMTUgMjMuMzM2NkMyNC4xMzM0IDIzLjQ1MDcgMjQuNjgxMSAyMy42NDQ0IDI1LjE1NDYgMjMuOTE3OEMyNS43NjI0IDI0LjI2ODcgMjUuOTgzIDI0LjYxMjggMjUuODE2NSAyNC45NTAxTDI0LjUgMjguMDYyNkwyNC42MjcyIDI4LjEzNjFMMjYuMTA3IDI1Ljg2NjlDMjYuMjE2IDI1LjY5NDMgMjYuNDg2IDI1LjY0MjggMjYuOTE2OCAyNS43MTI2QzI3LjM0NzcgMjUuNzgyMyAyNy43NDMzIDI1LjkyMTIgMjguMTAzNyAyNi4xMjkzQzI4LjQ2NDEgMjYuMzM3NCAyOC43MDYyIDI2LjUzODMgMjguODI5OCAyNi43MzIyQzI4Ljk2NDYgMjYuOTIzMSAyOC45OTg4IDI3LjA4NDIgMjguOTMyNCAyNy4yMTU1TDI3LjU3NDEgMjkuODM3NEwyNy42OTA3IDI5LjkwNDdMMjkuNjEzMyAyNy4zODI1QzI5LjczMjQgMjcuMjI1MSAzMC4wNTY5IDI3LjIwOTggMzAuNTg2NyAyNy4zMzY3QzMxLjEyNzYgMjcuNDYwNiAzMS41NzEyIDI3LjYyMjQgMzEuOTE3NSAyNy44MjI0QzMyLjI2MzggMjguMDIyMyAzMi41MDczIDI4LjIyODggMzIuNjQ4IDI4LjQ0MkMzMi44ODM0IDI4Ljc4NTIgMzIuOTM5OCAyOS4wNjI3IDMyLjgxNzQgMjkuMjc0N0MzMi44MDUyIDI5LjI5NTkgMzEuOTg1OSAyOS45NzI0IDMwLjM1OTUgMzEuMzA0M0MyOC43NDAyIDMyLjY0MDEgMjcuOTA5OCAzMy4zMTk2IDI3Ljg2ODIgMzMuMzQyN1pNMzIuMTc1NSAzNi4yOTZDMzEuMzg0IDM1LjgzOSAzMC45NDc2IDM1LjMxMzggMzAuODY2MiAzNC43MjAzQzMwLjc5MiAzNC4xMzA5IDMxLjA0ODYgMzMuMzI3NCAzMS42MzYxIDMyLjMwOThMMzMuMzAwNyAyOS40MjY2QzMzLjM4MjMgMjkuMjg1MiAzMy42NjgzIDI5LjI3MTMgMzQuMTU4NyAyOS4zODQ4QzM0LjY1MzIgMjkuNDkxMyAzNS4xMzAxIDI5LjY3NzEgMzUuNTg5NCAyOS45NDIzQzM2LjIwNDIgMzAuMjk3MyAzNi40MTk4IDMwLjYzMzggMzYuMjM2MiAzMC45NTE4TDM0LjY4MTcgMzMuNjQ0MkMzNC4zNzE2IDM0LjE4MTMgMzQuMTY2NCAzNC41ODU3IDM0LjA2NiAzNC44NTc1QzMzLjk2OTcgMzUuMTIyMyAzNC4wMDYzIDM1LjMwMzYgMzQuMTc1OSAzNS40MDE2QzM0LjQwMjEgMzUuNTMyMSAzNC41NzAyIDM1LjUwMiAzNC42ODA0IDM1LjMxMTJMMzYuODgzNiAzMS40OTUxQzM2Ljk2OTMgMzEuMzQ2NyAzNy4yNjc5IDMxLjMzNTQgMzcuNzc5NSAzMS40NjEyQzM4LjI5MSAzMS41ODY5IDM4LjgwNDggMzEuNzk4NyAzOS4zMjA2IDMyLjA5NjZDMzkuODM2NSAzMi4zOTQ0IDQwLjAxNDkgMzIuNjgxMSAzOS44NTU4IDMyLjk1NjdMMzYuNzA0IDM4LjQxNThDMzYuNjQ2OSAzOC41MTQ3IDM2LjM4MzUgMzguNDU2OSAzNS45MTM4IDM4LjI0MjNDMzUuNDQ0MSAzOC4wMjc2IDM0Ljk5MzcgMzcuNzk1OSAzNC41NjI2IDM3LjU0N0MzNC4xMzE2IDM3LjI5ODEgMzMuOTQ1MSAzNy4xMTUxIDM0LjAwMzMgMzYuOTk3OUwzNC4yOTUxIDM2LjI0NzdMMzQuMjEwMyAzNi4xOTg4QzMzLjk5OTkgMzYuNDE2NCAzMy43NTIzIDM2LjU1MTUgMzMuNDY3NiAzNi42MDM5QzMzLjMxOTggMzYuNjMxNSAzMy4xMjY1IDM2LjYyMzYgMzIuODg3OCAzNi41OEMzMi42NjAzIDM2LjUzMzUgMzIuNDIyOCAzNi40Mzg4IDMyLjE3NTUgMzYuMjk2WiIgZmlsbD0iI0ZGMzIzMiIvPgo8L3N2Zz4K"/>
+            <div id="uwu">
+
+              <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjkiIGhlaWdodD0iNjkiIHZpZXdCb3g9IjAgMCA2OSA2OSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTExLjY2NCA0NC4yMTZDOS44NzIgNDQuMjE2IDguNjE2IDQzLjc1MiA3Ljg5NiA0Mi44MjRDNy4xOTIgNDEuODk2IDYuODQgNDAuMjggNi44NCAzNy45NzZWMzEuNDQ4QzYuODQgMzEuMTI4IDcuMzEyIDMwLjgyNCA4LjI1NiAzMC41MzZDOS4yIDMwLjIzMiAxMC4xOTIgMzAuMDggMTEuMjMyIDMwLjA4QzEyLjYyNCAzMC4wOCAxMy4zMiAzMC40NCAxMy4zMiAzMS4xNlYzNy4yNTZDMTMuMzIgMzguNDcyIDEzLjM2OCAzOS4zNiAxMy40NjQgMzkuOTJDMTMuNTYgNDAuNDY0IDEzLjggNDAuNzM2IDE0LjE4NCA0MC43MzZDMTQuNjk2IDQwLjczNiAxNC45NTIgNDAuNTIgMTQuOTUyIDQwLjA4OFYzMS40NDhDMTQuOTUyIDMxLjExMiAxNS40NDggMzAuOCAxNi40NCAzMC41MTJDMTcuNDMyIDMwLjIyNCAxOC41MTIgMzAuMDggMTkuNjggMzAuMDhDMjAuODQ4IDMwLjA4IDIxLjQzMiAzMC4zOTIgMjEuNDMyIDMxLjAxNlY0My4zNzZDMjEuNDMyIDQzLjYgMjAuOTI4IDQzLjc2IDE5LjkyIDQzLjg1NkMxOC45MTIgNDMuOTUyIDE3LjkyIDQ0IDE2Ljk0NCA0NEMxNS45NjggNDQgMTUuNDcyIDQzLjg3MiAxNS40NTYgNDMuNjE2TDE1LjIxNiA0Mi4wNTZIMTUuMDI0QzE0Ljg4IDQyLjYzMiAxNC41OTIgNDMuMTA0IDE0LjE2IDQzLjQ3MkMxMy45MzYgNDMuNjY0IDEzLjYgNDMuODQgMTMuMTUyIDQ0QzEyLjcyIDQ0LjE0NCAxMi4yMjQgNDQuMjE2IDExLjY2NCA0NC4yMTZaTTQxLjMyMTYgNDMuNDI0QzQxLjExMzYgNDMuODA4IDQwLjAyNTYgNDQgMzguMDU3NiA0NEMzNi4xMDU2IDQ0IDM1LjA4OTYgNDMuODA4IDM1LjAwOTYgNDMuNDI0TDM0LjE5MzYgMzkuMDU2SDMzLjg1NzZMMzMuMDg5NiA0My40MjRDMzMuMDQxNiA0My44MDggMzEuNjQxNiA0NCAyOC44ODk2IDQ0QzI4LjEyMTYgNDQgMjcuNjA5NiA0My45NiAyNy4zNTM2IDQzLjg4QzI3LjExMzYgNDMuNzg0IDI2Ljk0NTYgNDMuNjMyIDI2Ljg0OTYgNDMuNDI0QzIzLjg3MzYgMzYuMTEyIDIyLjM4NTYgMzIuMjY0IDIyLjM4NTYgMzEuODhDMjIuMzg1NiAzMS40OTYgMjIuOTYxNiAzMS4xMDQgMjQuMTEzNiAzMC43MDRDMjUuMjgxNiAzMC4yODggMjYuNDAxNiAzMC4wOCAyNy40NzM2IDMwLjA4QzI4Ljg0OTYgMzAuMDggMjkuNTYxNiAzMC40NDggMjkuNjA5NiAzMS4xODRMMzAuNDI1NiAzNy43NkgzMC43MTM2TDMxLjAwMTYgMzIuNDU2QzMxLjAxNzYgMzIuMDU2IDMxLjQyNTYgMzEuNzA0IDMyLjIyNTYgMzEuNEMzMy4wMjU2IDMxLjA5NiAzMy44MzM2IDMwLjk0NCAzNC42NDk2IDMwLjk0NEMzNS40NjU2IDMwLjk0NCAzNi4wNzM2IDMxLjA0OCAzNi40NzM2IDMxLjI1NkMzNi44ODk2IDMxLjQ0OCAzNy4xMDU2IDMxLjY4OCAzNy4xMjE2IDMxLjk3NkwzNy4zODU2IDM3Ljc2SDM3LjY0OTZMMzguNDQxNiAzMS41OTJDMzguNDg5NiAzMS4yMDggMzkuMDI1NiAzMC44NjQgNDAuMDQ5NiAzMC41NkM0MS4wODk2IDMwLjI0IDQyLjAwMTYgMzAuMDggNDIuNzg1NiAzMC4wOEM0My41Njk2IDMwLjA4IDQ0LjE4NTYgMzAuMTkyIDQ0LjYzMzYgMzAuNDE2QzQ1LjM2OTYgMzAuNzY4IDQ1LjczNzYgMzEuMTg0IDQ1LjczNzYgMzEuNjY0QzQ1LjczNzYgMzEuNzEyIDQ1LjAwOTYgMzMuNjY0IDQzLjU1MzYgMzcuNTJDNDIuMTEzNiA0MS4zNzYgNDEuMzY5NiA0My4zNDQgNDEuMzIxNiA0My40MjRaTTUxLjUzMTIgNDQuMjE2QzQ5LjczOTIgNDQuMjE2IDQ4LjQ4MzIgNDMuNzUyIDQ3Ljc2MzIgNDIuODI0QzQ3LjA1OTIgNDEuODk2IDQ2LjcwNzIgNDAuMjggNDYuNzA3MiAzNy45NzZWMzEuNDQ4QzQ2LjcwNzIgMzEuMTI4IDQ3LjE3OTIgMzAuODI0IDQ4LjEyMzIgMzAuNTM2QzQ5LjA2NzIgMzAuMjMyIDUwLjA1OTIgMzAuMDggNTEuMDk5MiAzMC4wOEM1Mi40OTEyIDMwLjA4IDUzLjE4NzIgMzAuNDQgNTMuMTg3MiAzMS4xNlYzNy4yNTZDNTMuMTg3MiAzOC40NzIgNTMuMjM1MiAzOS4zNiA1My4zMzEyIDM5LjkyQzUzLjQyNzIgNDAuNDY0IDUzLjY2NzIgNDAuNzM2IDU0LjA1MTIgNDAuNzM2QzU0LjU2MzIgNDAuNzM2IDU0LjgxOTIgNDAuNTIgNTQuODE5MiA0MC4wODhWMzEuNDQ4QzU0LjgxOTIgMzEuMTEyIDU1LjMxNTIgMzAuOCA1Ni4zMDcyIDMwLjUxMkM1Ny4yOTkyIDMwLjIyNCA1OC4zNzkyIDMwLjA4IDU5LjU0NzIgMzAuMDhDNjAuNzE1MiAzMC4wOCA2MS4yOTkyIDMwLjM5MiA2MS4yOTkyIDMxLjAxNlY0My4zNzZDNjEuMjk5MiA0My42IDYwLjc5NTIgNDMuNzYgNTkuNzg3MiA0My44NTZDNTguNzc5MiA0My45NTIgNTcuNzg3MiA0NCA1Ni44MTEyIDQ0QzU1LjgzNTIgNDQgNTUuMzM5MiA0My44NzIgNTUuMzIzMiA0My42MTZMNTUuMDgzMiA0Mi4wNTZINTQuODkxMkM1NC43NDcyIDQyLjYzMiA1NC40NTkyIDQzLjEwNCA1NC4wMjcyIDQzLjQ3MkM1My44MDMyIDQzLjY2NCA1My40NjcyIDQzLjg0IDUzLjAxOTIgNDRDNTIuNTg3MiA0NC4xNDQgNTIuMDkxMiA0NC4yMTYgNTEuNTMxMiA0NC4yMTZaIiBmaWxsPSIjRkYzMjMyIi8+Cjwvc3ZnPgo="/>
+            </div>
           </a>
           <details id="account">
             <summary>
@@ -512,6 +578,8 @@
     const signIn = (user) => {
       signInDiv.classList.add("hide");
       accountDiv.classList.remove("hide");
+      document.body.classList.add("signed-in");
+      
       if (user.image) {
         avatarImg.src = user.image;
       }
@@ -529,6 +597,7 @@
     const signOutUI = () => {
       signInDiv.classList.remove("hide");
       accountDiv.classList.add("hide");
+      document.body.classList.remove("signed-in");
       localStorage.removeItem(ZOO_USER_KEY)
     };
 

@@ -798,7 +798,7 @@
         const shapes = (topFace) => {
           // The rest are drawn on top of this.
           svg2KCApiCalls(svgOutline, { topFace, extrudeHeight: 10 });
-          svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 5 });
+          // svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 5 });
 
           // Stop the stream, save on bandwidth
           setTimeout(() => {
@@ -872,7 +872,6 @@
         // Call this callback when the server responds with the same cmd_id
         if (cb) cbs[payload.cmd_id] = cb;
 
-        console.log(payload);
         ws.send(JSON.stringify(payload));
         return payload.cmd_id;
       };
@@ -1504,11 +1503,13 @@
 
         const pathId = start_path();
 
+        const fillValue = e.style.fill || e.attributes.fill?.value;
+
         if (basePathId === undefined) {
           basePathId = pathId;
-        } else if (e.style.fill === "none" || !e.style.fill) {
+        } else if (fillValue === "none" || !fillValue) {
           additionalPathIds.push(pathId);
-        } else if (e.style.fill !== "none") {
+        } else if (fillValue !== "none") {
           cutPathIds.push(pathId);
         }
 

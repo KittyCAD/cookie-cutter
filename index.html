@@ -701,8 +701,6 @@
 
     let sequence = 0;
     const pointerHandler = (eventName) => (event) => {
-      event.preventDefault();
-      event.stopPropagation();
 
       if (!dc) return;
 
@@ -741,8 +739,6 @@
         };
         ws.send(JSON.stringify(message));
       }
-
-      return false;
     };
 
     streamEl.addEventListener("pointermove", pointerHandler("pointermove"), { passive: false });
@@ -828,8 +824,8 @@
         // Hold off creating the outline and stamp until we find the top face
         const shapes = (topFace) => {
           // The rest are drawn on top of this.
-          svg2KCApiCalls(svgOutline, { topFace, extrudeHeight: 10 });
-          svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 5 });
+          svg2KCApiCalls(svgOutline, { topFace, extrudeHeight: 7 });
+          svg2KCApiCalls(svgStamp, { topFace, extrudeHeight: 4 });
 
           // Stop the stream, save on bandwidth
           setTimeout(() => {

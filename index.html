@@ -747,7 +747,7 @@
 
     const streamPlayback = (isPlaying) => {
       // Because iPhones ruin the UX, disable this.
-      return;
+      if (!isPlaying) return;
 
       if (!isPlaying) {
         streamEl.pause();

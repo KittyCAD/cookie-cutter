@@ -1561,6 +1561,8 @@
         for (let e of root.children) {
           switch (e.tagName) {
             case "g": {
+              if (e.transform.baseVal.length === 0) break;
+
               translate = {
                 x: translate.x + e.transform.baseVal[0].matrix.e,
                 y: translate.y + e.transform.baseVal[0].matrix.f,

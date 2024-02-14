@@ -746,6 +746,9 @@
     streamEl.addEventListener("pointerup", pointerHandler("pointerup"), { passive: false });
 
     const streamPlayback = (isPlaying) => {
+      // Because iPhones ruin the UX, disable this.
+      return;
+
       if (!isPlaying) {
         streamEl.pause();
         mediaStream.getTracks().forEach(track => {

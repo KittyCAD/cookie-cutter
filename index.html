@@ -1552,7 +1552,7 @@
       let escape = false;
 
       const startPathAndTrackSomeThings = (e, translate, opts) => {
-        if (opts.topFace) enable_sketch_mode({ entity_id: opts.topFace, ortho: false, animated: true });
+        if (opts.topFace) enable_sketch_mode({ entity_id: opts.topFace, ortho: false, animated: true, adjust_camera: true });
 
         const pathId = start_path();
 
